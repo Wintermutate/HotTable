@@ -6,7 +6,8 @@ var mysql = require('mysql');
 var app = express();
 var PORT = 3000;
 var sqlPassword = 'Mushu86212!';
-tableCounter = 0;
+var tableCounter = 1;
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -56,19 +57,18 @@ app.post('/api/new', function (req, res) {
 	// Push to SQL
 	connection.connect(function(err) {
 	  if (err) throw err;
+	 	var currentTableNumber = 1;		
 	  	
-	  	var rand = Math.floor((Math.random() * 5) + 1);
-	  	console.log({
-	      CustomerName: newcustomer.CustomerName,
-	      PhoneNumber: parseInt(newcustomer.PhoneNumber),
-	      email: newcustomer.email,
-	      tablenumber: rand
-	    })
+	  	if (tableCounter <= 5){
+	  		currentTableNumber = tableCounter++;
+	  		tableLoagic(currentTableNumber);
+	  	}
+
 	   	connection.query('INSERT INTO customers SET ?', {
 	   	  CustomerName: newcustomer.CustomerName,
 	      PhoneNumber: parseInt(newcustomer.PhoneNumber),
 	      email: newcustomer.email,
-	      tablenumber: rand
+	      tablenumber: currentTableNumber
 	    }, function(err, rows){
 
     	if(err){
@@ -135,3 +135,22 @@ var displayWaitTables  = function(res){
 	});
 }
 
+var tableLoagic = function(currentTableNumber){
+	var connection = mysql.createConnection({
+	    host: "localhost",
+	    port: 3306,
+	    user: "root", //Your username
+	    password: sqlPassword, //Your password
+	    database: "bamazon"
+	});
+
+	connection.query('UPDATE hottable SET tablestatus=true WHERE id = ?', [currentTableNumber] ,function(err, rows) {
+	           if (err) {
+	           	console.log(err);
+	           	connection.end();
+	           }else{	           
+	           	connection.end();	           
+	           }
+	});
+	
+}
